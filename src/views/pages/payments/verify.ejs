@@ -1,0 +1,40 @@
+<% var ticketDoc = payment.ticket; %>
+<% var ticketEmail = ticketDoc && ticketDoc.user && ticketDoc.user.email ? ticketDoc.user.email : (ticketDoc && ticketDoc.guestEmail ? ticketDoc.guestEmail : null); %>
+
+<div class="page-head center">
+  <% if (payment.status === 'success') { %>
+    <div class="status-icon success-icon">✓</div>
+    <h1>You're in</h1>
+    <p class="muted">Your ticket has been emailed to you with a PDF attached.</p>
+  <% } else if (payment.status === 'failed') { %>
+    <div class="status-icon error-icon">×</div>
+    <h1>Payment failed</h1>
+    <p class="muted">We couldn't confirm your payment. No charge was made.</p>
+  <% } else { %>
+    <div class="status-icon pending-icon">⏱</div>
+    <h1>Payment pending</h1>
+    <p class="muted">We're still verifying. Refresh this page in a moment.</p>
+  <% } %>
+</div>
+
+<div class="payment-summary">
+  <dl>
+    <div><dt>Reference</dt><dd><code><%= payment.reference %></code></dd></div>
+    <div><dt>Amount</dt><dd><%= payment.currency %> <%= Number(payment.amount).toLocaleString() %></dd></div>
+    <div><dt>Status</dt><dd><span class="status-badge status-<%= payment.status %>"><%= payment.status %></span></dd></div>
+    <% if (payment.paidAt) { %>
+      <div><dt>Paid at</dt><dd><%= new Date(payment.paidAt).toLocaleString() %></dd></div>
+    <% } %>
+    <% if (ticketDoc && ticketDoc.ticketNumber) { %>
+      <div><dt>Ticket #</dt><dd><code><%= ticketDoc.ticketNumber %></code></dd></div>
+    <% } %>
+  </dl>
+
+  <div class="actions-row">
+    <% if (payment.status === 'success' && ticketDoc && ticketDoc.ticketNumber && ticketEmail) { %>
+      <a href="/tickets/lookup/<%= ticketDoc.ticketNumber %>?email=<%= encodeURIComponent(ticketEmail) %>" class="btn btn-accent">View ticket</a>
+      <a href="/tickets/lookup/<%= ticketDoc.ticketNumber %>/pdf?email=<%= encodeURIComponent(ticketEmail) %>" class="btn btn-ghost">Download PDF</a>
+    <% } %>
+    <a href="/events" class="btn btn-ghost">Browse more events</a>
+  </div>
+</div>

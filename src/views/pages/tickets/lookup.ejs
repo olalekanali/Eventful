@@ -1,0 +1,27 @@
+<div class="auth-shell">
+  <div class="auth-card">
+    <h1>Find my ticket</h1>
+    <p class="muted">Enter your email and ticket number to view, download, or re-send your ticket.</p>
+
+    <% if (error) { %>
+      <div class="flash flash-error" style="margin-bottom: 16px;"><%= error %></div>
+    <% } %>
+
+    <form action="/tickets/lookup" method="POST" class="form">
+      <div class="form-row">
+        <label for="email">Email address</label>
+        <input type="email" name="email" id="email" required autocomplete="email" />
+      </div>
+      <div class="form-row">
+        <label for="ticketNumber">Ticket number</label>
+        <input type="text" name="ticketNumber" id="ticketNumber" required placeholder="EVT-XXXX-XXXXX" />
+        <small>Find this on your confirmation email or the PDF.</small>
+      </div>
+      <button type="submit" class="btn btn-primary btn-block btn-lg">Find ticket</button>
+    </form>
+
+    <p class="auth-foot">
+      Have an account? <a href="/auth/login" class="text-link">Sign in</a> to see all your tickets in one place.
+    </p>
+  </div>
+</div>

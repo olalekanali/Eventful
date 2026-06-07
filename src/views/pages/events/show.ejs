@@ -1,0 +1,129 @@
+<article class="event-detail">
+  <% if (event.bannerImage) { %>
+    <div class="event-hero" style="background-image: url('<%= event.bannerImage %>')"></div>
+  <% } else { %>
+    <div class="event-hero event-hero-fallback"></div>
+  <% } %>
+
+  <div class="event-detail-body">
+    <header class="event-detail-head">
+      <div>
+        <span class="status-badge status-<%= event.status %>"><%= event.status %></span>
+        <span class="status-badge"><%= event.category %></span>
+      </div>
+      <h1><%= event.title %></h1>
+      <p class="event-detail-by">
+        Hosted by <strong><%= event.creator.firstName %> <%= event.creator.lastName %></strong>
+      </p>
+    </header>
+
+    <div class="event-detail-grid">
+      <div class="event-detail-main">
+        <h2>About this event</h2>
+        <p class="event-description"><%= event.description %></p>
+
+        <div class="info-grid">
+          <div class="info-row">
+            <div class="info-label">When</div>
+            <div class="info-value">
+              <strong><%= new Date(event.startDate).toLocaleString('en-US', { dateStyle: 'full', timeStyle: 'short' }) %></strong>
+              <br />
+              <span class="muted small">
+                Until <%= new Date(event.endDate).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }) %>
+              </span>
+            </div>
+          </div>
+          <div class="info-row">
+            <div class="info-label">Where</div>
+            <div class="info-value">
+              <strong><%= event.venue %></strong>
+              <% if (event.address) { %><br /><span class="muted small"><%= event.address %></span><% } %>
+              <% if (event.city) { %><br /><span class="muted small"><%= event.city %><% if (event.country) { %>, <%= event.country %><% } %></span><% } %>
+            </div>
+          </div>
+        </div>
+
+        <div class="share-section">
+          <h3>Share this event</h3>
+          <div class="share-buttons">
+            <a href="<%= shareLinks.twitter %>" target="_blank" rel="noopener" class="share-btn">Twitter</a>
+            <a href="<%= shareLinks.facebook %>" target="_blank" rel="noopener" class="share-btn">Facebook</a>
+            <a href="<%= shareLinks.whatsapp %>" target="_blank" rel="noopener" class="share-btn">WhatsApp</a>
+            <a href="<%= shareLinks.linkedin %>" target="_blank" rel="noopener" class="share-btn">LinkedIn</a>
+            <a href="<%= shareLinks.telegram %>" target="_blank" rel="noopener" class="share-btn">Telegram</a>
+            <a href="<%= shareLinks.email %>" class="share-btn">Email</a>
+            <button type="button" class="share-btn" data-copy="<%= eventUrl %>">Copy link</button>
+          </div>
+        </div>
+      </div>
+
+      <aside class="event-detail-side">
+        <div class="ticket-box">
+          <% var avail = event.totalTickets - event.ticketsSold; %>
+          <% var canPurchase = avail > 0 && event.status === 'published' && new Date(event.startDate) > new Date(); %>
+          <% var ownerView = user && (user.role === 'creator' || user.role === 'admin') && event.creator && event.creator._id && event.creator._id.toString() === user.id; %>
+
+          <div class="ticket-price">
+            <% if (event.ticketPrice > 0) { %>
+              <span class="price-amount"><%= event.currency %> <%= Number(event.ticketPrice).toLocaleString() %></span>
+              <span class="muted small">per ticket</span>
+            <% } else { %>
+              <span class="price-amount">Free</span>
+            <% } %>
+            <div class="ticket-availability">
+              <% if (avail <= 0) { %>
+                <span class="badge badge-error">Sold out</span>
+              <% } else if (avail < 20) { %>
+                <span class="badge badge-warning">Only <%= avail %> left</span>
+              <% } else { %>
+                <span class="muted small"><%= avail %> tickets available</span>
+              <% } %>
+            </div>
+          </div>
+
+          <% if (ownerView) { %>
+            <a href="/events/<%= event._id %>/edit" class="btn btn-primary btn-block">Edit event</a>
+            <a href="/creator/events/<%= event._id %>/analytics" class="btn btn-ghost btn-block" style="margin-top: 8px;">View analytics</a>
+          <% } else if (canPurchase) { %>
+            <form action="/payments/initiate" method="POST" class="buy-form">
+              <input type="hidden" name="eventId" value="<%= event._id %>" />
+
+              <div class="form-row">
+                <label for="quantity">Quantity</label>
+                <input type="number" name="quantity" id="quantity" value="1" min="1" max="10" />
+              </div>
+
+              <% if (!user) { %>
+                <div class="guest-divider">Your details</div>
+                <div class="form-row">
+                  <label for="guestName">Full name</label>
+                  <input type="text" name="guestName" id="guestName" required autocomplete="name" />
+                </div>
+                <div class="form-row">
+                  <label for="guestEmail">Email</label>
+                  <input type="email" name="guestEmail" id="guestEmail" required autocomplete="email" />
+                  <small>We'll send your ticket as a PDF here.</small>
+                </div>
+                <div class="form-row">
+                  <label for="guestPhone">Phone number <span class="muted small">(optional)</span></label>
+                  <input type="tel" name="guestPhone" id="guestPhone" autocomplete="tel" />
+                </div>
+              <% } %>
+
+              <button type="submit" class="btn btn-accent btn-block btn-lg" style="margin-top: 16px;">
+                <% if (event.ticketPrice > 0) { %>Continue to checkout<% } else { %>Reserve free ticket<% } %>
+              </button>
+              <% if (!user) { %>
+                <p class="muted small" style="text-align: center; margin-top: 12px; margin-bottom: 0;">
+                  No account needed. Have one? <a href="/auth/login?next=/events/<%= event._id %>" class="text-link small">Sign in</a>
+                </p>
+              <% } %>
+            </form>
+          <% } else { %>
+            <p class="muted small">This event is not available for purchase.</p>
+          <% } %>
+        </div>
+      </aside>
+    </div>
+  </div>
+</article>

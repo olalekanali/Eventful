@@ -1,0 +1,58 @@
+<div class="page-head">
+  <h1>Attendees</h1>
+  <p class="muted"><strong><%= event.title %></strong> · <%= result.total %> ticket<%= result.total !== 1 ? 's' : '' %> sold</p>
+</div>
+
+<% if (result.items.length === 0) { %>
+  <div class="empty-state"><p>No tickets purchased yet.</p></div>
+<% } else { %>
+  <div class="data-table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Attendee</th>
+          <th>Email</th>
+          <th>Phone</th>
+          <th>Type</th>
+          <th>Ticket #</th>
+          <th>Qty</th>
+          <th>Status</th>
+          <th>Scanned</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% result.items.forEach(function (ticket) { %>
+          <% var name = ticket.user ? (ticket.user.firstName + ' ' + ticket.user.lastName) : (ticket.guestName || '—'); %>
+          <% var email = ticket.user ? ticket.user.email : (ticket.guestEmail || '—'); %>
+          <% var phone = ticket.user ? '—' : (ticket.guestPhone || '—'); %>
+          <tr>
+            <td><strong><%= name %></strong></td>
+            <td><%= email %></td>
+            <td><%= phone %></td>
+            <td>
+              <% if (ticket.user) { %>
+                <span class="badge badge-success">Member</span>
+              <% } else { %>
+                <span class="badge badge-warning">Guest</span>
+              <% } %>
+            </td>
+            <td><code class="small"><%= ticket.ticketNumber %></code></td>
+            <td><%= ticket.quantity %></td>
+            <td><span class="status-badge status-<%= ticket.status %>"><%= ticket.status %></span></td>
+            <td>
+              <% if (ticket.scanned) { %>
+                ✓ <span class="muted small"><%= new Date(ticket.scannedAt).toLocaleDateString() %></span>
+              <% } else { %>
+                <span class="muted">—</span>
+              <% } %>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+
+  <%- include('../../partials/pagination', { page: result.page, totalPages: result.totalPages, query: '' }) %>
+<% } %>
+
+<p style="margin-top: 24px;"><a href="/creator/events/<%= event._id %>/analytics" class="text-link">← Back to analytics</a></p>

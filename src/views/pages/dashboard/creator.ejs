@@ -1,0 +1,77 @@
+<div class="page-head with-action">
+  <div>
+    <h1>Creator dashboard</h1>
+    <p class="muted">Welcome back, <%= user.firstName %>. Here's how your events are performing.</p>
+  </div>
+  <a href="/events/new" class="btn btn-primary">+ New event</a>
+</div>
+
+<div class="stat-grid">
+  <div class="stat-card">
+    <div class="stat-label">Total events</div>
+    <div class="stat-value"><%= overall.totalEvents %></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Tickets sold</div>
+    <div class="stat-value"><%= overall.totalTicketsSold.toLocaleString() %></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Unique attendees</div>
+    <div class="stat-value"><%= overall.totalAttendees.toLocaleString() %></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Tickets scanned</div>
+    <div class="stat-value"><%= overall.totalScannedTickets.toLocaleString() %></div>
+  </div>
+  <div class="stat-card stat-card-wide">
+    <div class="stat-label">Total revenue</div>
+    <div class="stat-value">
+      <%= overall.currency %> <%= Number(overall.totalRevenue).toLocaleString() %>
+    </div>
+  </div>
+</div>
+
+<section class="section">
+  <div class="section-head">
+    <h2>Your events</h2>
+    <a href="/creator/events" class="text-link">Manage all →</a>
+  </div>
+
+  <% if (breakdown.length === 0) { %>
+    <div class="empty-state">
+      <p>You haven't created any events yet.</p>
+      <a href="/events/new" class="btn btn-primary">Create your first event</a>
+    </div>
+  <% } else { %>
+    <div class="data-table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Event</th>
+            <th>Status</th>
+            <th>Sold</th>
+            <th>Attendees</th>
+            <th>Scanned</th>
+            <th>Revenue</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% breakdown.forEach(function (e) { %>
+            <tr>
+              <td><strong><%= e.eventTitle %></strong></td>
+              <td><span class="status-badge status-<%= e.status %>"><%= e.status %></span></td>
+              <td><%= e.ticketsSold %> / <%= e.totalTickets %></td>
+              <td><%= e.attendees %></td>
+              <td><%= e.scanned %></td>
+              <td><%= e.currency %> <%= Number(e.revenue).toLocaleString() %></td>
+              <td class="text-right">
+                <a href="/creator/events/<%= e.eventId %>/analytics" class="text-link small">Analytics</a>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  <% } %>
+</section>

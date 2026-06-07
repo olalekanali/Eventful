@@ -1,0 +1,12 @@
+<% if (totalPages > 1) { %>
+  <% var qs = locals.query ? locals.query : ''; %>
+  <nav class="pagination" aria-label="Pagination">
+    <% if (page > 1) { %>
+      <a href="?<%= qs %>page=<%= page - 1 %>" class="page-link">← Prev</a>
+    <% } %>
+    <span class="page-info">Page <%= page %> of <%= totalPages %></span>
+    <% if (page < totalPages) { %>
+      <a href="?<%= qs %>page=<%= page + 1 %>" class="page-link">Next →</a>
+    <% } %>
+  </nav>
+<% } %>

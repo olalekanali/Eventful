@@ -1,0 +1,16 @@
+<div class="error-shell">
+  <div class="error-card">
+    <div class="error-code"><%= statusCode %></div>
+    <h1>Something went wrong</h1>
+    <p class="muted"><%= message %></p>
+    <% if (stack) { %>
+      <details class="error-details">
+        <summary>Stack trace (development only)</summary>
+        <pre><%= stack %></pre>
+      </details>
+    <% } %>
+    <div class="actions-row">
+      <a href="/" class="btn btn-primary">Go home</a>
+    </div>
+  </div>
+</div>

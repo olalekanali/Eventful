@@ -1,0 +1,113 @@
+<% var isGuest = !ticket.user; %>
+<% var recipientName = ticket.user ? (ticket.user.firstName + ' ' + ticket.user.lastName) : (ticket.guestName || 'Guest'); %>
+<% var recipientEmail = ticket.user ? ticket.user.email : ticket.guestEmail; %>
+
+<div class="ticket-detail">
+  <div class="ticket-detail-grid">
+    <div class="ticket-card">
+      <div class="ticket-card-head">
+        <span class="status-badge status-<%= ticket.status %>"><%= ticket.status %></span>
+        <span class="muted small">Ticket #<%= ticket.ticketNumber %></span>
+      </div>
+
+      <h1><%= ticket.event.title %></h1>
+      <p class="muted">
+        <%= new Date(ticket.event.startDate).toLocaleString('en-US', { dateStyle: 'full', timeStyle: 'short' }) %>
+      </p>
+      <p class="muted">📍 <%= ticket.event.venue %><% if (ticket.event.city) { %>, <%= ticket.event.city %><% } %></p>
+      <p class="muted small">Issued to <strong><%= recipientName %></strong> (<%= recipientEmail %>)</p>
+
+      <% if (ticket.status === 'paid' && ticket.qrImage) { %>
+        <div class="qr-wrapper">
+          <img src="<%= ticket.qrImage %>" alt="QR code" class="qr-image" />
+          <p class="muted small">Present this at the venue entrance.</p>
+        </div>
+
+        <div class="actions-row" style="justify-content: flex-start; margin-top: 16px;">
+          <a href="/tickets/lookup/<%= ticket.ticketNumber %>/pdf?email=<%= encodeURIComponent(recipientEmail) %>"
+             class="btn btn-accent">⬇ Download PDF</a>
+          <form action="/tickets/lookup/<%= ticket.ticketNumber %>/resend?email=<%= encodeURIComponent(recipientEmail) %>" method="POST" class="inline-form">
+            <button type="submit" class="btn btn-ghost">✉ Resend by email</button>
+          </form>
+        </div>
+      <% } else if (ticket.status === 'pending') { %>
+        <div class="pending-banner">
+          <strong>Payment pending</strong>
+          <p class="small">Your ticket will be issued once payment is confirmed.</p>
+        </div>
+      <% } else if (ticket.status === 'used') { %>
+        <div class="used-banner">
+          <strong>Used at <%= new Date(ticket.scannedAt).toLocaleString() %></strong>
+        </div>
+      <% } else if (ticket.status === 'cancelled') { %>
+        <div class="cancelled-banner"><strong>This ticket was cancelled.</strong></div>
+      <% } %>
+
+      <dl class="ticket-meta">
+        <div><dt>Quantity</dt><dd><%= ticket.quantity %></dd></div>
+        <div><dt>Total paid</dt><dd><%= ticket.currency %> <%= Number(ticket.totalAmount).toLocaleString() %></dd></div>
+        <div><dt>Purchased</dt><dd><%= new Date(ticket.createdAt).toLocaleDateString() %></dd></div>
+      </dl>
+    </div>
+
+    <% if (!isGuest && locals.reminders) { %>
+      <div class="reminder-card">
+        <h2>Reminders</h2>
+        <p class="muted small">Get an email before this event starts.</p>
+
+        <% if (ticket.status === 'paid' && new Date(ticket.event.startDate) > new Date()) { %>
+          <form action="/tickets/reminders" method="POST">
+            <input type="hidden" name="eventId" value="<%= ticket.event._id %>" />
+            <input type="hidden" name="ticketId" value="<%= ticket._id %>" />
+            <div class="checkbox-group checkbox-group-column">
+              <% reminderTypes.forEach(function (rt) { %>
+                <% var has = reminders.some(function (r) { return r.type === rt; }); %>
+                <label class="checkbox-card">
+                  <input type="checkbox" name="reminders" value="<%= rt %>" <%= has ? 'checked' : '' %> />
+                  <span><%= reminderLabels[rt] %></span>
+                </label>
+              <% }) %>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block" style="margin-top: 16px;">Save reminders</button>
+          </form>
+        <% } else { %>
+          <p class="muted small">Reminders can only be set on paid tickets for upcoming events.</p>
+        <% } %>
+
+        <% if (reminders.length > 0) { %>
+          <h3 class="reminder-list-head">Scheduled</h3>
+          <ul class="reminder-list">
+            <% reminders.forEach(function (r) { %>
+              <li>
+                <span><%= reminderLabels[r.type] %></span>
+                <span class="muted small">
+                  <% if (r.sent) { %>✓ sent<% } else { %><%= new Date(r.fireAt).toLocaleDateString() %><% } %>
+                </span>
+              </li>
+            <% }) %>
+          </ul>
+        <% } %>
+      </div>
+    <% } else { %>
+      <aside class="reminder-card">
+        <h2>Need anything else?</h2>
+        <p class="muted small">
+          You can re-download or re-send your ticket anytime from this page. Bookmark this URL or save the PDF.
+        </p>
+        <% if (isGuest) { %>
+          <p class="muted small" style="margin-top: 16px;">
+            Want reminders before the event? <a href="/auth/register" class="text-link">Create an account</a> and we'll link this ticket to it.
+          </p>
+        <% } %>
+      </aside>
+    <% } %>
+  </div>
+
+  <p style="margin-top: 24px;">
+    <% if (isGuest) { %>
+      <a href="/tickets/lookup" class="text-link">← Find another ticket</a>
+    <% } else { %>
+      <a href="/tickets/my" class="text-link">← Back to my tickets</a>
+    <% } %>
+  </p>
+</div>

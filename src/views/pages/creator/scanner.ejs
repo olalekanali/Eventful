@@ -1,0 +1,63 @@
+<div class="page-head">
+  <h1>Ticket scanner</h1>
+  <p class="muted">Paste a scanned QR payload below to validate a ticket.</p>
+</div>
+
+<div class="scanner-shell">
+  <div class="scanner-card">
+    <form id="scan-form" class="form">
+      <label for="qrPayload">QR payload</label>
+      <textarea
+        name="qrPayload"
+        id="qrPayload"
+        rows="4"
+        placeholder="Paste the QR payload here..."
+        required
+      ></textarea>
+      <button type="submit" class="btn btn-primary btn-block btn-lg">Validate ticket</button>
+    </form>
+
+    <div id="scan-result" class="scan-result" hidden></div>
+  </div>
+
+  <aside class="scanner-aside">
+    <h2>How it works</h2>
+    <ol class="muted small">
+      <li>Use any QR scanner app to read a ticket at the entrance.</li>
+      <li>Paste the decoded payload into the box.</li>
+      <li>We verify the HMAC signature, check ownership, and mark the ticket as used.</li>
+    </ol>
+    <p class="muted small">A ticket can only be scanned once.</p>
+  </aside>
+</div>
+
+<script>
+  // Inline so it works without bundling — kept tiny
+  document.getElementById('scan-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const payload = document.getElementById('qrPayload').value.trim();
+    const resultBox = document.getElementById('scan-result');
+    resultBox.hidden = false;
+    resultBox.className = 'scan-result is-pending';
+    resultBox.textContent = 'Validating...';
+
+    try {
+      const res = await fetch('/tickets/scan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({ qrPayload: payload }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        resultBox.className = 'scan-result is-success';
+        resultBox.innerHTML = `<strong>✓ Admit ${data.ticket.recipient || ''}</strong><div>${data.message}</div><div class="muted small">${data.ticket.ticketNumber}</div>`;
+      } else {
+        resultBox.className = 'scan-result is-error';
+        resultBox.innerHTML = `<strong>× Deny</strong><div>${data.message || 'Invalid ticket'}</div>`;
+      }
+    } catch (err) {
+      resultBox.className = 'scan-result is-error';
+      resultBox.textContent = 'Error: ' + (err.message || 'Failed to scan');
+    }
+  });
+</script>

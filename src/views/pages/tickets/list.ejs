@@ -1,0 +1,34 @@
+<div class="page-head">
+  <h1>My tickets</h1>
+  <p class="muted">All tickets you've purchased on <%= appName %>.</p>
+</div>
+
+<% if (result.items.length === 0) { %>
+  <div class="empty-state">
+    <p>You haven't purchased any tickets yet.</p>
+    <a href="/events" class="btn btn-accent">Browse events</a>
+  </div>
+<% } else { %>
+  <div class="ticket-list">
+    <% result.items.forEach(function (ticket) { %>
+      <a href="/tickets/<%= ticket._id %>" class="ticket-row" style="text-decoration: none; color: inherit;">
+        <div class="ticket-row-main">
+          <h3><%= ticket.event ? ticket.event.title : 'Unknown event' %></h3>
+          <div class="muted small">
+            <% if (ticket.event && ticket.event.startDate) { %>
+              <%= new Date(ticket.event.startDate).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }) %>
+              · <%= ticket.event.venue %>
+            <% } %>
+          </div>
+          <div class="muted small">Ticket #<%= ticket.ticketNumber %></div>
+        </div>
+        <div class="ticket-row-side">
+          <span class="status-badge status-<%= ticket.status %>"><%= ticket.status %></span>
+          <span class="muted small">× <%= ticket.quantity %></span>
+        </div>
+      </a>
+    <% }) %>
+  </div>
+
+  <%- include('../../partials/pagination', { page: result.page, totalPages: result.totalPages, query: '' }) %>
+<% } %>

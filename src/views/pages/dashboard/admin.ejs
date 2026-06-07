@@ -1,0 +1,46 @@
+<div class="page-head">
+  <h1>Admin dashboard</h1>
+  <p class="muted">Platform overview and management.</p>
+</div>
+
+<div class="stat-grid">
+  <div class="stat-card">
+    <div class="stat-label">Total users</div>
+    <div class="stat-value"><%= platform.totalUsers.toLocaleString() %></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Creators</div>
+    <div class="stat-value"><%= platform.totalCreators.toLocaleString() %></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Total events</div>
+    <div class="stat-value"><%= platform.totalEvents.toLocaleString() %></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Paid tickets</div>
+    <div class="stat-value"><%= platform.totalPaidTickets.toLocaleString() %></div>
+  </div>
+  <div class="stat-card stat-card-wide">
+    <div class="stat-label">Platform revenue</div>
+    <div class="stat-value">
+      <%= platform.currency %> <%= Number(platform.totalRevenue).toLocaleString() %>
+    </div>
+  </div>
+</div>
+
+<section class="section">
+  <div class="quick-actions">
+    <a href="/admin/users" class="quick-action-card">
+      <h3>Manage users</h3>
+      <p class="muted">View, deactivate, or change roles for any user.</p>
+    </a>
+    <a href="/admin/events" class="quick-action-card">
+      <h3>Manage events</h3>
+      <p class="muted">Browse every event on the platform.</p>
+    </a>
+    <a href="/events/new" class="quick-action-card">
+      <h3>Create event</h3>
+      <p class="muted">Admins can create events directly.</p>
+    </a>
+  </div>
+</section>

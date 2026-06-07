@@ -1,0 +1,40 @@
+<article class="event-card">
+  <% if (event.bannerImage) { %>
+    <div class="event-banner" style="background-image: url('<%= event.bannerImage %>')"></div>
+  <% } else { %>
+    <div class="event-banner event-banner-fallback">
+      <span><%= event.category %></span>
+    </div>
+  <% } %>
+  <div class="event-body">
+    <div class="event-meta">
+      <span class="event-category"><%= event.category %></span>
+      <span class="event-date">
+        <%= new Date(event.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) %>
+      </span>
+    </div>
+    <h3 class="event-title"><a href="/events/<%= event._id %>"><%= event.title %></a></h3>
+    <div class="event-venue">
+      <%= event.venue %><% if (event.city) { %>, <%= event.city %><% } %>
+    </div>
+    <div class="event-footer">
+      <span class="event-price">
+        <% if (event.ticketPrice > 0) { %>
+          <%= event.currency %> <%= Number(event.ticketPrice).toLocaleString() %>
+        <% } else { %>
+          Free
+        <% } %>
+      </span>
+      <span class="event-availability">
+        <% var avail = event.totalTickets - event.ticketsSold; %>
+        <% if (avail <= 0) { %>
+          <span class="badge badge-error">Sold out</span>
+        <% } else if (avail < 20) { %>
+          <span class="badge badge-warning"><%= avail %> left</span>
+        <% } else { %>
+          <span class="muted small"><%= avail %> available</span>
+        <% } %>
+      </span>
+    </div>
+  </div>
+</article>

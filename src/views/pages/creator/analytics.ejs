@@ -1,0 +1,54 @@
+<div class="page-head">
+  <h1>Analytics: <%= event.title %></h1>
+  <p class="muted">
+    <%= new Date(event.startDate).toLocaleDateString() %> · <%= event.venue %>
+  </p>
+</div>
+
+<div class="stat-grid">
+  <div class="stat-card">
+    <div class="stat-label">Tickets sold</div>
+    <div class="stat-value"><%= stats.ticketsSold %> <span class="stat-sub">/ <%= stats.totalTickets %></span></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Available</div>
+    <div class="stat-value"><%= stats.ticketsAvailable %></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Unique attendees</div>
+    <div class="stat-value"><%= stats.totalAttendees %></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Tickets scanned</div>
+    <div class="stat-value"><%= stats.totalScanned %></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Scan rate</div>
+    <div class="stat-value"><%= stats.scanRate %>%</div>
+  </div>
+  <div class="stat-card stat-card-wide">
+    <div class="stat-label">Revenue</div>
+    <div class="stat-value">
+      <%= stats.currency %> <%= Number(stats.totalRevenue).toLocaleString() %>
+    </div>
+  </div>
+</div>
+
+<div class="capacity-bar">
+  <div class="capacity-label">Capacity</div>
+  <div class="capacity-track">
+    <div
+      class="capacity-fill"
+      style="width: <%= stats.totalTickets > 0 ? Math.round((stats.ticketsSold / stats.totalTickets) * 100) : 0 %>%"
+    ></div>
+  </div>
+  <div class="capacity-value">
+    <%= stats.ticketsSold %> / <%= stats.totalTickets %>
+  </div>
+</div>
+
+<div class="actions-row">
+  <a href="/events/<%= event._id %>" class="btn btn-ghost">View event page</a>
+  <a href="/events/<%= event._id %>/attendees" class="btn btn-ghost">View attendees</a>
+  <a href="/events/<%= event._id %>/edit" class="btn btn-ghost">Edit event</a>
+</div>

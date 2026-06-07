@@ -1,0 +1,72 @@
+<div class="page-head">
+  <h1>Users</h1>
+  <p class="muted">Manage all <%= total %> users on the platform.</p>
+</div>
+
+<form action="/admin/users" method="GET" class="filter-bar">
+  <input type="search" name="search" placeholder="Search name or email..." value="<%= filters.search %>" class="filter-search" />
+  <select name="role" class="filter-select">
+    <option value="">Any role</option>
+    <% roles.forEach(function (r) { %>
+      <option value="<%= r %>" <%= filters.role === r ? 'selected' : '' %>><%= r %></option>
+    <% }) %>
+  </select>
+  <button type="submit" class="btn btn-primary">Filter</button>
+</form>
+
+<% if (users.length === 0) { %>
+  <div class="empty-state"><p>No users match these filters.</p></div>
+<% } else { %>
+  <div class="data-table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>User</th>
+          <th>Email</th>
+          <th>Role</th>
+          <th>Status</th>
+          <th>Joined</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% users.forEach(function (u) { %>
+          <tr>
+            <td><strong><%= u.firstName %> <%= u.lastName %></strong></td>
+            <td><%= u.email %></td>
+            <td>
+              <form action="/admin/users/<%= u._id %>/role" method="POST" class="inline-form">
+                <select name="role" onchange="this.form.submit()" class="role-select">
+                  <% roles.forEach(function (r) { %>
+                    <option value="<%= r %>" <%= u.role === r ? 'selected' : '' %>><%= r %></option>
+                  <% }) %>
+                </select>
+              </form>
+            </td>
+            <td>
+              <% if (u.isActive) { %>
+                <span class="badge badge-success">Active</span>
+              <% } else { %>
+                <span class="badge badge-error">Disabled</span>
+              <% } %>
+            </td>
+            <td><%= new Date(u.createdAt).toLocaleDateString() %></td>
+            <td class="text-right">
+              <% if (u._id.toString() !== user.id) { %>
+                <form action="/admin/users/<%= u._id %>/toggle" method="POST" class="inline-form">
+                  <button type="submit" class="text-link small">
+                    <%= u.isActive ? 'Deactivate' : 'Activate' %>
+                  </button>
+                </form>
+              <% } else { %>
+                <span class="muted small">(you)</span>
+              <% } %>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+
+  <%- include('../../partials/pagination', { page: page, totalPages: totalPages, query: '' }) %>
+<% } %>

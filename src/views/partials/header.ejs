@@ -1,0 +1,41 @@
+<header class="site-header">
+  <div class="container header-inner">
+    <a href="/" class="brand">
+      <span class="brand-mark">E</span>
+      <span class="brand-name"><%= appName %></span>
+    </a>
+
+    <nav class="primary-nav" aria-label="Primary">
+      <a href="/events" class="<%= currentUrl.startsWith('/events') ? 'is-active' : '' %>">Events</a>
+      <a href="/tickets/lookup" class="<%= currentUrl.startsWith('/tickets/lookup') ? 'is-active' : '' %>">Find my ticket</a>
+
+      <% if (user) { %>
+        <a href="/dashboard" class="<%= currentUrl === '/dashboard' ? 'is-active' : '' %>">Dashboard</a>
+
+        <% if (user.role === 'creator' || user.role === 'admin') { %>
+          <a href="/creator/events" class="<%= currentUrl.startsWith('/creator') ? 'is-active' : '' %>">My events</a>
+          <a href="/tickets/scanner" class="<%= currentUrl === '/tickets/scanner' ? 'is-active' : '' %>">Scanner</a>
+        <% } %>
+
+        <% if (user.role === 'admin') { %>
+          <a href="/admin/users" class="<%= currentUrl.startsWith('/admin') ? 'is-active' : '' %>">Admin</a>
+        <% } %>
+      <% } %>
+    </nav>
+
+    <div class="auth-actions">
+      <% if (user) { %>
+        <span class="user-chip">
+          <span class="user-name"><%= user.firstName %></span>
+          <span class="user-role role-<%= user.role %>"><%= user.role %></span>
+        </span>
+        <form action="/auth/logout" method="POST" class="inline-form">
+          <button type="submit" class="btn btn-ghost">Sign out</button>
+        </form>
+      <% } else { %>
+        <a href="/auth/login" class="btn btn-ghost">Sign in</a>
+        <a href="/auth/register" class="btn btn-primary">Host an event</a>
+      <% } %>
+    </div>
+  </div>
+</header>

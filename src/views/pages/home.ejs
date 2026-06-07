@@ -1,0 +1,68 @@
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-eyebrow">
+      <span class="dot"></span>
+      <span>Eventful — built for memorable moments</span>
+    </div>
+    <h1>Find your next unforgettable moment.</h1>
+    <p class="hero-sub">
+      Discover concerts, theater, sports, conferences, and cultural gatherings near you. Book in seconds — no account required.
+    </p>
+    <div class="hero-actions">
+      <a href="/events" class="btn btn-accent btn-lg">Browse events</a>
+      <% if (!user) { %>
+        <a href="/auth/register" class="btn btn-ghost btn-lg">Host your own event</a>
+      <% } %>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-head">
+    <h2>Upcoming events</h2>
+    <a href="/events" class="text-link">See all →</a>
+  </div>
+
+  <% if (events.length === 0) { %>
+    <div class="empty-state">
+      <p>No events are scheduled yet.</p>
+      <% if (user && (user.role === 'creator' || user.role === 'admin')) { %>
+        <a href="/events/new" class="btn btn-accent">Create the first one</a>
+      <% } %>
+    </div>
+  <% } else { %>
+    <div class="event-grid">
+      <% events.forEach(function (event) { %>
+        <%- include('../partials/event-card', { event: event }) %>
+      <% }) %>
+    </div>
+  <% } %>
+</section>
+
+<section class="section feature-section">
+  <div class="section-head">
+    <h2>Why creators choose Eventful</h2>
+  </div>
+  <div class="feature-grid">
+    <div class="feature">
+      <div class="feature-icon">⚡</div>
+      <h3>Frictionless checkout</h3>
+      <p>Guests buy tickets with just an email — no account needed. PDFs land in their inbox automatically.</p>
+    </div>
+    <div class="feature">
+      <div class="feature-icon">🔒</div>
+      <h3>Tamper-proof tickets</h3>
+      <p>Every QR code is HMAC-signed. Scanning catches fakes instantly, and each code can only be used once.</p>
+    </div>
+    <div class="feature">
+      <div class="feature-icon">💳</div>
+      <h3>Secure payments</h3>
+      <p>Paystack-powered checkout with signed webhooks. Atomic seat reservation means you never oversell.</p>
+    </div>
+    <div class="feature">
+      <div class="feature-icon">📊</div>
+      <h3>Real analytics</h3>
+      <p>Track attendees, revenue, and scan rates — across all your events or for a single show.</p>
+    </div>
+  </div>
+</section>
