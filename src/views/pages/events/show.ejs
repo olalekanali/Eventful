@@ -85,7 +85,7 @@
             <a href="/events/<%= event._id %>/edit" class="btn btn-primary btn-block">Edit event</a>
             <a href="/creator/events/<%= event._id %>/analytics" class="btn btn-ghost btn-block" style="margin-top: 8px;">View analytics</a>
           <% } else if (canPurchase) { %>
-            <form action="/payments/initiate" method="POST" class="buy-form">
+            <form id="payment-form" action="/payments/initiate" method="POST" class="buy-form">
               <input type="hidden" name="eventId" value="<%= event._id %>" />
 
               <div class="form-row">
@@ -110,8 +110,21 @@
                 </div>
               <% } %>
 
+              <% if (event.ticketPrice > 0) { %>
+                <div class="price-summary" style="background: #f5f5f5; padding: 12px; border-radius: 6px; margin: 16px 0;">
+                  <div style="display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 6px;">
+                    <span><%= event.currency %> <%= Number(event.ticketPrice).toLocaleString() %> × <span id="qty-display">1</span></span>
+                    <span id="subtotal"><%= event.currency %> <%= Number(event.ticketPrice).toLocaleString() %></span>
+                  </div>
+                  <div style="border-top: 1px solid #ddd; padding-top: 8px; display: flex; justify-content: space-between; font-weight: bold;">
+                    <span>Total:</span>
+                    <span id="total-price"><%= event.currency %> <%= Number(event.ticketPrice).toLocaleString() %></span>
+                  </div>
+                </div>
+              <% } %>
+
               <button type="submit" class="btn btn-accent btn-block btn-lg" style="margin-top: 16px;">
-                <% if (event.ticketPrice > 0) { %>Continue to checkout<% } else { %>Reserve free ticket<% } %>
+                <% if (event.ticketPrice > 0) { %>Pay with Paystack<% } else { %>Reserve free ticket<% } %>
               </button>
               <% if (!user) { %>
                 <p class="muted small" style="text-align: center; margin-top: 12px; margin-bottom: 0;">
@@ -127,3 +140,77 @@
     </div>
   </div>
 </article>
+
+<script>
+  // Update price summary when quantity changes
+  const quantityInput = document.getElementById('quantity');
+  const ticketPrice = <%= event.ticketPrice || 0 %>;
+  const currency = '<%= event.currency %>';
+
+  function formatPrice(amount) {
+    return new Intl.NumberFormat('en-US').format(amount);
+  }
+
+  function updatePrice() {
+    const quantity = parseInt(quantityInput?.value || '1', 10);
+    const subtotal = ticketPrice * quantity;
+
+    // Update quantity display
+    const qtyDisplay = document.getElementById('qty-display');
+    if (qtyDisplay) qtyDisplay.textContent = quantity;
+
+    // Update subtotal
+    const subtotalEl = document.getElementById('subtotal');
+    if (subtotalEl) subtotalEl.textContent = `${currency} ${formatPrice(subtotal)}`;
+
+    // Update total
+    const totalEl = document.getElementById('total-price');
+    if (totalEl) totalEl.textContent = `${currency} ${formatPrice(subtotal)}`;
+  }
+
+  if (quantityInput) {
+    quantityInput.addEventListener('change', updatePrice);
+    quantityInput.addEventListener('input', updatePrice);
+  }
+
+  const paymentForm = document.getElementById('payment-form');
+  if (paymentForm && ticketPrice > 0) {
+    paymentForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const submitButton = paymentForm.querySelector('button[type="submit"]');
+      if (submitButton) {
+        submitButton.disabled = true;
+        submitButton.textContent = 'Redirecting...';
+      }
+
+      try {
+        const formData = new FormData(paymentForm);
+        const response = await fetch(paymentForm.action, {
+          method: 'POST',
+          body: formData,
+          headers: {
+            Accept: 'application/json',
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error('Payment initiation failed');
+        }
+
+        const data = await response.json();
+        if (data.authorizationUrl) {
+          window.location.href = data.authorizationUrl;
+          return;
+        }
+
+        throw new Error(data.message || 'Unable to redirect to Paystack');
+      } catch (err) {
+        if (submitButton) {
+          submitButton.disabled = false;
+          submitButton.textContent = 'Pay with Paystack';
+        }
+        alert(err?.message || 'Could not start payment. Please try again.');
+      }
+    });
+  }
+</script>

@@ -34,8 +34,16 @@ export const initiate = asyncHandler(async (req: Request, res: Response) => {
   const payment = await paymentsService.initiate(eventId, quantity, purchaser);
   if (!payment.authorizationUrl) {
     (req as any).flash('error', 'Failed to initiate payment');
+    if (req.headers.accept?.includes('application/json') || (req as any).xhr) {
+      return res.status(502).json({ message: 'Failed to initiate payment' });
+    }
     return res.redirect(`/events/${eventId}`);
   }
+
+  if (req.headers.accept?.includes('application/json') || (req as any).xhr) {
+    return res.json({ authorizationUrl: payment.authorizationUrl });
+  }
+
   res.redirect(payment.authorizationUrl);
 });
 
