@@ -1,5 +1,7 @@
 /* ============================================================
-   EVENTFUL — design system
+   EVENTFUL — design system  (v2 · intuitive pass)
+   Drop-in replacement: same class names, sharper affordances.
+   Changes are commented inline with  // WHY: ...
    ============================================================ */
 
 @import url('https://rsms.me/inter/inter.css');
@@ -24,6 +26,9 @@
   --color-accent: #d4622a;
   --color-accent-hover: #b94e1d;
   --color-accent-soft: #fdf4ee;
+  /* WHY: a dedicated focus colour so keyboard users always see where they are. */
+  --color-focus: #d4622a;
+  --focus-ring: 0 0 0 3px rgba(212, 98, 42, 0.35);
 
   --color-success: #15803d;
   --color-success-bg: #ecfdf5;
@@ -75,11 +80,24 @@
 
   --container-max: 1200px;
   --header-height: 68px;
+  /* WHY: minimum comfortable tap size on touch screens. */
+  --tap-target: 44px;
 }
 
 @supports (font-variation-settings: normal) {
   :root {
     --font-sans: 'Inter var', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+}
+
+/* WHY: respect users who disable motion — kills all transitions/animations
+   instead of letting them fight the OS setting. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
   }
 }
 
@@ -108,17 +126,12 @@ h1, h2, h3, h4 {
   font-weight: 600;
   letter-spacing: -0.015em;
   color: var(--color-text);
+  text-wrap: balance; /* WHY: stops orphaned single words on headings. */
 }
 h1 { font-size: clamp(1.75rem, 4vw, 2.5rem); letter-spacing: -0.025em; }
 h2 { font-size: 1.5rem; letter-spacing: -0.02em; }
 h3 { font-size: 1.125rem; }
-p { margin: 0 0 var(--space-3); }
-a {
-  color: var(--color-text);
-  text-decoration: none;
-  transition: color 0.15s ease;
-}
-a:hover { color: var(--color-accent); }
+p { margin: 0 0 var(--space-3); max-width: 70ch; } /* WHY: readable line length. */
 code {
   font-family: var(--font-mono);
   font-size: 0.85em;
@@ -127,10 +140,30 @@ code {
   border-radius: var(--radius-sm);
 }
 
+/* WHY: in body copy a link should READ as a link before you hover it.
+   Tinted text + a soft underline = unmistakable affordance. Nav and
+   buttons opt out of this with their own rules below. */
+a {
+  color: var(--color-accent);
+  text-decoration: none;
+  text-underline-offset: 2px;
+  text-decoration-color: rgba(212, 98, 42, 0.35);
+  transition: color 0.15s ease, text-decoration-color 0.15s ease;
+}
+a:hover { color: var(--color-accent-hover); text-decoration: underline; }
+
+/* WHY: one consistent, always-visible focus ring for every interactive
+   element — the single biggest "intuitiveness" win for keyboard users. */
+:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+  border-radius: var(--radius-sm);
+}
+
 .muted { color: var(--color-text-muted); }
 .small { font-size: 0.8125rem; }
-.text-link { color: var(--color-text); font-weight: 500; border-bottom: 1px solid transparent; }
-.text-link:hover { color: var(--color-accent); border-bottom-color: currentColor; }
+.text-link { color: var(--color-text); font-weight: 500; border-bottom: 1px solid transparent; text-decoration-color: transparent; }
+.text-link:hover { color: var(--color-accent); border-bottom-color: currentColor; text-decoration: none; }
 .text-right { text-align: right; }
 .center { text-align: center; }
 
@@ -154,7 +187,8 @@ code {
   z-index: 50;
 }
 .header-inner { display: flex; align-items: center; gap: var(--space-6); height: var(--header-height); }
-.brand { display: flex; align-items: center; gap: var(--space-2); text-decoration: none; font-weight: 700; font-size: 1.125rem; }
+.brand { display: flex; align-items: center; gap: var(--space-2); text-decoration: none; font-weight: 700; font-size: 1.125rem; color: var(--color-text); }
+.brand:hover { color: var(--color-text); } /* WHY: brand shouldn't behave like a body link. */
 .brand-mark {
   width: 28px;
   height: 28px;
@@ -168,7 +202,17 @@ code {
   font-size: 0.875rem;
 }
 .brand-name { color: var(--color-text); letter-spacing: -0.02em; }
-.primary-nav { display: flex; gap: var(--space-5); flex: 1; }
+
+/* WHY: horizontal scroll fallback so the nav never collapses into chaos
+   on narrow screens — links stay reachable instead of wrapping/overlapping. */
+.primary-nav {
+  display: flex;
+  gap: var(--space-5);
+  flex: 1;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.primary-nav::-webkit-scrollbar { display: none; }
 .primary-nav a {
   text-decoration: none;
   color: var(--color-text-muted);
@@ -176,6 +220,7 @@ code {
   font-size: 0.9375rem;
   padding: var(--space-2) 0;
   position: relative;
+  white-space: nowrap;
 }
 .primary-nav a:hover { color: var(--color-text); }
 .primary-nav a.is-active { color: var(--color-text); }
@@ -189,7 +234,7 @@ code {
   background: var(--color-accent);
   border-radius: 2px 2px 0 0;
 }
-.auth-actions { display: flex; align-items: center; gap: var(--space-3); }
+.auth-actions { display: flex; align-items: center; gap: var(--space-3); flex-shrink: 0; }
 .user-chip {
   display: flex;
   align-items: center;
@@ -206,6 +251,7 @@ code {
   width: 24px; height: 24px;
   border-radius: 50%;
   background: var(--gradient-accent);
+  flex-shrink: 0;
 }
 .user-name { font-weight: 500; }
 .user-role { font-size: 0.6875rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 2px 7px; border-radius: var(--radius-sm); font-weight: 600; }
@@ -213,11 +259,17 @@ code {
 .role-creator { background: var(--color-accent-soft); color: var(--color-accent); }
 .role-eventee { background: var(--color-surface-alt); color: var(--color-text-muted); }
 
+/* WHY: on phones the brand name can crowd out actions — trim non-essentials. */
+@media (max-width: 560px) {
+  .header-inner { gap: var(--space-3); }
+  .user-name { display: none; }
+}
+
 /* ============================================================ FOOTER ============================================================ */
 .site-footer { background: var(--color-surface); border-top: 1px solid var(--color-border); padding: var(--space-6) 0; margin-top: var(--space-9); }
 .footer-inner { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); flex-wrap: wrap; }
 .footer-brand { display: flex; align-items: center; gap: var(--space-2); font-weight: 500; }
-.footer-nav { display: flex; gap: var(--space-5); }
+.footer-nav { display: flex; gap: var(--space-5); flex-wrap: wrap; }
 .footer-nav a { color: var(--color-text-muted); font-size: 0.875rem; }
 .footer-nav a:hover { color: var(--color-text); }
 
@@ -228,6 +280,7 @@ code {
   justify-content: center;
   gap: var(--space-2);
   padding: 10px 18px;
+  min-height: var(--tap-target); /* WHY: reliable tap target on mobile. */
   font-family: inherit;
   font-size: 0.9375rem;
   font-weight: 500;
@@ -236,26 +289,65 @@ code {
   border-radius: var(--radius-md);
   text-decoration: none;
   cursor: pointer;
-  transition: background 0.15s ease, border-color 0.15s ease, transform 0.05s ease, box-shadow 0.15s ease;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.08s ease, box-shadow 0.15s ease, color 0.15s ease;
   white-space: nowrap;
+  user-select: none;
 }
-.btn:active { transform: translateY(1px); }
+/* WHY: subtle lift on hover makes "this is pressable" obvious; press
+   pushes back down so the click feels physical. */
+.btn:hover { transform: translateY(-1px); }
+.btn:active { transform: translateY(0); }
+
+/* WHY: every button must visibly refuse interaction when disabled,
+   and the cursor should say so. Previously undefined. */
+.btn:disabled,
+.btn[aria-disabled="true"],
+.btn.is-loading {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+  pointer-events: none;
+}
+
 .btn-primary { background: var(--color-primary); color: var(--color-on-primary); box-shadow: var(--shadow-xs); }
 .btn-primary:hover { background: var(--color-primary-hover); box-shadow: var(--shadow-sm); }
+/* WHY: accent = the ONE action you most want clicked (Buy ticket, Create event).
+   Slightly heavier hover shadow so it reads as the page's hero action and the
+   dark button reads as secondary-strong — fixes the "which button matters?" ambiguity. */
 .btn-accent { background: var(--gradient-accent); color: white; box-shadow: 0 1px 2px rgba(212, 98, 42, 0.15); }
-.btn-accent:hover { box-shadow: 0 4px 12px rgba(212, 98, 42, 0.25); }
+.btn-accent:hover { box-shadow: 0 6px 18px rgba(212, 98, 42, 0.3); }
 .btn-ghost { background: var(--color-surface); border-color: var(--color-border-strong); color: var(--color-text); }
 .btn-ghost:hover { background: var(--color-surface-alt); border-color: var(--color-text-muted); }
 .btn-danger { background: var(--color-error); color: white; }
 .btn-danger:hover { background: #991b1b; }
-.btn-lg { padding: 13px 24px; font-size: 1rem; border-radius: var(--radius-lg); }
-.btn-sm { padding: 6px 12px; font-size: 0.8125rem; }
+.btn-lg { padding: 13px 24px; font-size: 1rem; border-radius: var(--radius-lg); min-height: 52px; }
+.btn-sm { padding: 6px 12px; font-size: 0.8125rem; min-height: 36px; } /* WHY: small buttons opt out of the 44px floor on purpose. */
 .btn-block { width: 100%; }
 .inline-form { display: inline; }
+
+/* WHY: an in-button spinner so async actions (payment, scan) show progress
+   instead of looking frozen. Add class="is-loading" on click. */
+.btn.is-loading { position: relative; color: transparent !important; }
+.btn.is-loading::after {
+  content: '';
+  position: absolute;
+  width: 16px; height: 16px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  color: var(--color-on-primary);
+  animation: btnSpin 0.6s linear infinite;
+}
+.btn-ghost.is-loading::after { color: var(--color-text); }
+@keyframes btnSpin { to { transform: rotate(360deg); } }
 
 /* ============================================================ FLASH ============================================================ */
 .flash-stack { padding-top: var(--space-4); display: flex; flex-direction: column; gap: var(--space-2); }
 .flash {
+  display: flex;            /* WHY: room for a leading status glyph. */
+  align-items: center;
+  gap: var(--space-2);
   padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-md);
   border: 1px solid;
@@ -263,9 +355,14 @@ code {
   font-weight: 500;
   animation: slideDown 0.3s ease;
 }
+/* WHY: a colour-independent icon so the meaning survives colour-blindness. */
+.flash::before { font-weight: 700; line-height: 1; }
 .flash-success { background: var(--color-success-bg); border-color: var(--color-success-border); color: var(--color-success); }
+.flash-success::before { content: '\2713'; }     /* ✓ */
 .flash-error { background: var(--color-error-bg); border-color: var(--color-error-border); color: var(--color-error); }
+.flash-error::before { content: '\26A0'; }        /* ⚠ */
 .flash-info { background: var(--color-info-bg); border-color: var(--color-info-border); color: var(--color-info); }
+.flash-info::before { content: '\2139'; }         /* ℹ */
 
 @keyframes slideDown {
   from { opacity: 0; transform: translateY(-8px); }
@@ -292,6 +389,17 @@ code {
   color: var(--color-text-muted);
 }
 .status-badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+/* WHY: a gentle pulse on "live"/active states so the eye lands on what's
+   happening now — the most time-sensitive info on an events page. */
+.status-active::before, .status-published::before {
+  box-shadow: 0 0 0 0 currentColor;
+  animation: statusPulse 2s ease-out infinite;
+}
+@keyframes statusPulse {
+  0% { box-shadow: 0 0 0 0 rgba(21, 128, 61, 0.4); }
+  70% { box-shadow: 0 0 0 5px rgba(21, 128, 61, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(21, 128, 61, 0); }
+}
 .status-published, .status-paid, .status-success, .status-active { background: var(--color-success-bg); color: var(--color-success); }
 .status-draft, .status-pending { background: var(--color-warning-bg); color: var(--color-warning); }
 .status-cancelled, .status-failed { background: var(--color-error-bg); color: var(--color-error); }
@@ -360,6 +468,8 @@ code {
 
 /* ============================================================ EVENT CARDS ============================================================ */
 .event-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: var(--space-5); }
+/* WHY: make the WHOLE card feel clickable (cursor + lift + accent edge),
+   not just the title link — that's the mental model users already have for cards. */
 .event-card {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
@@ -369,7 +479,7 @@ code {
   display: flex;
   flex-direction: column;
 }
-.event-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: var(--color-border-strong); }
+.event-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: var(--color-accent); }
 .event-banner {
   height: 180px;
   background-size: cover;
@@ -393,8 +503,8 @@ code {
 .event-category { text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600; color: var(--color-accent); }
 .event-date { font-weight: 500; }
 .event-title { margin: 0 0 var(--space-2); font-size: 1.0625rem; line-height: 1.3; }
-.event-title a { color: var(--color-text); }
-.event-title a:hover { color: var(--color-accent); }
+.event-title a { color: var(--color-text); text-decoration: none; }
+.event-title a:hover { color: var(--color-accent); text-decoration: none; }
 .event-venue { font-size: 0.875rem; color: var(--color-text-muted); margin-bottom: var(--space-3); flex: 1; }
 .event-footer { display: flex; justify-content: space-between; align-items: center; padding-top: var(--space-3); border-top: 1px solid var(--color-border); }
 .event-price { font-weight: 600; font-size: 0.9375rem; }
@@ -411,13 +521,14 @@ code {
 .event-detail-by { color: var(--color-text-muted); margin: 0; }
 .event-detail-grid { display: grid; grid-template-columns: 1fr 380px; gap: var(--space-7); }
 @media (max-width: 900px) { .event-detail-grid { grid-template-columns: 1fr; } }
-.event-description { white-space: pre-wrap; line-height: 1.7; color: var(--color-text); font-size: 1rem; }
+.event-description { white-space: pre-wrap; line-height: 1.7; color: var(--color-text); font-size: 1rem; max-width: 65ch; }
 
 .info-grid { margin: var(--space-5) 0; border: 1px solid var(--color-border); border-radius: var(--radius-lg); overflow: hidden; }
 .info-row { display: grid; grid-template-columns: 140px 1fr; padding: var(--space-4) var(--space-5); gap: var(--space-4); align-items: start; }
 .info-row + .info-row { border-top: 1px solid var(--color-border); }
 .info-label { color: var(--color-text-muted); font-weight: 600; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; padding-top: 2px; }
 .info-value strong { font-weight: 600; }
+@media (max-width: 480px) { .info-row { grid-template-columns: 1fr; gap: var(--space-1); } }
 
 /* ============================================================ TICKET BOX (event sidebar) ============================================================ */
 .ticket-box {
@@ -487,29 +598,63 @@ code {
   .form-row-split, .form-row-triple { grid-template-columns: 1fr; }
 }
 .form-row label { font-weight: 500; font-size: 0.875rem; color: var(--color-text); }
+/* WHY: a clear, conventional required marker so users know what they MUST fill. */
+.form-row label.required::after,
+.form-row.required label::after {
+  content: ' *';
+  color: var(--color-error);
+  font-weight: 700;
+}
 .form-row input,
 .form-row textarea,
 .form-row select {
   font: inherit;
   padding: 10px 14px;
+  min-height: var(--tap-target);
   border: 1px solid var(--color-border-strong);
   border-radius: var(--radius-md);
   background: var(--color-surface);
   color: var(--color-text);
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
+/* WHY: placeholder must look like a hint, not real text. */
+.form-row input::placeholder,
+.form-row textarea::placeholder { color: var(--color-text-subtle); }
+/* WHY: focus now uses the accent ring — same signal as every other control. */
 .form-row input:focus,
 .form-row textarea:focus,
 .form-row select:focus {
   outline: none;
-  border-color: var(--color-text);
-  box-shadow: 0 0 0 3px rgba(20, 17, 12, 0.08);
+  border-color: var(--color-accent);
+  box-shadow: var(--focus-ring);
+}
+/* WHY: inline validation states the browser/back end can toggle.
+   Error is visible BEFORE you read the message. */
+.form-row input.is-error,
+.form-row textarea.is-error,
+.form-row select.is-error,
+.form-row input:user-invalid,
+.form-row textarea:user-invalid {
+  border-color: var(--color-error);
+}
+.form-row input.is-error:focus,
+.form-row input:user-invalid:focus {
+  box-shadow: 0 0 0 3px var(--color-error-bg);
+}
+.form-row .field-error { color: var(--color-error); font-size: 0.8125rem; font-weight: 500; }
+.form-row input:disabled,
+.form-row textarea:disabled,
+.form-row select:disabled {
+  background: var(--color-surface-alt);
+  color: var(--color-text-subtle);
+  cursor: not-allowed;
 }
 .form-row input[type="file"] { padding: 7px 10px; }
 .form-row small { color: var(--color-text-muted); font-size: 0.8125rem; }
 
 .form-actions { display: flex; gap: var(--space-3); align-items: center; flex-wrap: wrap; padding-top: var(--space-2); }
 .danger-form { margin-left: auto; }
+@media (max-width: 480px) { .danger-form { margin-left: 0; width: 100%; } }
 
 .radio-group { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
 @media (max-width: 640px) { .radio-group { grid-template-columns: 1fr; } }
@@ -525,10 +670,16 @@ code {
   background: var(--color-surface);
 }
 .radio-card:hover { border-color: var(--color-text-muted); }
-.radio-card input { margin: 4px 0 0 0; accent-color: var(--color-primary); }
+.radio-card input { margin: 4px 0 0 0; accent-color: var(--color-accent); }
 .radio-card-body strong { display: block; margin-bottom: 2px; font-weight: 600; }
 .radio-card-body small { color: var(--color-text-muted); }
-.radio-card:has(input:checked) { border-color: var(--color-text); background: var(--color-accent-soft); }
+/* WHY: selected card now gets an accent ring + soft fill so the choice is
+   unmistakable, not just a faint tint. */
+.radio-card:has(input:checked) {
+  border-color: var(--color-accent);
+  background: var(--color-accent-soft);
+  box-shadow: inset 0 0 0 1px var(--color-accent);
+}
 
 .checkbox-group { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: var(--space-2); }
 .checkbox-group-column { grid-template-columns: 1fr; }
@@ -543,8 +694,8 @@ code {
   transition: all 0.15s ease;
 }
 .checkbox-card:hover { border-color: var(--color-border-strong); }
-.checkbox-card input { accent-color: var(--color-primary); }
-.checkbox-card:has(input:checked) { border-color: var(--color-text); background: var(--color-accent-soft); }
+.checkbox-card input { accent-color: var(--color-accent); }
+.checkbox-card:has(input:checked) { border-color: var(--color-accent); background: var(--color-accent-soft); }
 
 /* File upload styling */
 .file-upload {
@@ -558,7 +709,7 @@ code {
   cursor: pointer;
   transition: all 0.15s ease;
 }
-.file-upload:hover { border-color: var(--color-text-muted); background: var(--color-surface); }
+.file-upload:hover { border-color: var(--color-accent); background: var(--color-accent-soft); }
 .file-upload input[type="file"] { display: none; }
 .file-upload-icon {
   width: 40px; height: 40px;
@@ -607,17 +758,25 @@ code {
 }
 .filter-search, .filter-select, .filter-city {
   padding: 8px 12px;
+  min-height: var(--tap-target);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   font: inherit;
   background: var(--color-surface);
 }
+/* WHY: a search glyph hint makes the search field self-explanatory. */
+.filter-search {
+  flex: 2 1 240px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%236f6a60' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='7' cy='7' r='5'/%3E%3Cpath d='M11 11l4 4'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: 12px center;
+  padding-left: 36px;
+}
 .filter-search:focus, .filter-select:focus, .filter-city:focus {
   outline: none;
-  border-color: var(--color-text);
-  box-shadow: 0 0 0 3px rgba(20, 17, 12, 0.08);
+  border-color: var(--color-accent);
+  box-shadow: var(--focus-ring);
 }
-.filter-search { flex: 2 1 240px; }
 .filter-select, .filter-city { flex: 1 1 140px; }
 .result-count { margin-bottom: var(--space-4); }
 
@@ -634,9 +793,13 @@ code {
   gap: var(--space-4);
   transition: all 0.15s ease;
 }
-.ticket-row:hover { border-color: var(--color-border-strong); background: var(--color-surface-2); }
+.ticket-row:hover { border-color: var(--color-accent); background: var(--color-surface-2); }
 .ticket-row-main h3 { margin: 0 0 var(--space-1); font-size: 1rem; }
 .ticket-row-side { display: flex; align-items: center; gap: var(--space-3); }
+@media (max-width: 480px) {
+  .ticket-row { flex-direction: column; align-items: flex-start; }
+  .ticket-row-side { width: 100%; justify-content: space-between; }
+}
 
 .ticket-detail-grid { display: grid; grid-template-columns: 1fr 360px; gap: var(--space-5); }
 @media (max-width: 900px) { .ticket-detail-grid { grid-template-columns: 1fr; } }
@@ -657,13 +820,20 @@ code {
 }
 .qr-image { margin: 0 auto var(--space-3); max-width: 280px; background: white; padding: var(--space-3); border-radius: var(--radius-md); }
 .pending-banner, .used-banner, .cancelled-banner {
+  display: flex; align-items: center; gap: var(--space-2);
   padding: var(--space-4); border-radius: var(--radius-md); margin: var(--space-4) 0;
+  font-weight: 500;
 }
+.pending-banner::before, .used-banner::before, .cancelled-banner::before { font-weight: 700; }
 .pending-banner { background: var(--color-warning-bg); border: 1px solid var(--color-warning-border); color: var(--color-warning); }
+.pending-banner::before { content: '\23F3'; }   /* ⏳ */
 .used-banner { background: var(--color-info-bg); border: 1px solid var(--color-info-border); color: var(--color-info); }
+.used-banner::before { content: '\2713'; }       /* ✓ */
 .cancelled-banner { background: var(--color-error-bg); border: 1px solid var(--color-error-border); color: var(--color-error); }
+.cancelled-banner::before { content: '\2715'; }  /* ✕ */
 
 .ticket-meta { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-4); margin-top: var(--space-5); padding-top: var(--space-4); border-top: 1px solid var(--color-border); }
+@media (max-width: 480px) { .ticket-meta { grid-template-columns: 1fr 1fr; } }
 .ticket-meta dt { font-size: 0.6875rem; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: var(--space-1); font-weight: 600; }
 .ticket-meta dd { margin: 0; font-weight: 500; }
 .reminder-list-head { margin-top: var(--space-5); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-text-muted); font-weight: 600; }
@@ -712,10 +882,14 @@ code {
   background: var(--color-surface-2);
   border-bottom: 1px solid var(--color-border);
   white-space: nowrap;
+  position: sticky; /* WHY: header stays visible while scrolling long tables. */
+  top: 0;
+  z-index: 1;
 }
 .data-table tbody td { padding: var(--space-3) var(--space-4); border-bottom: 1px solid var(--color-border); vertical-align: middle; }
 .data-table tbody tr:last-child td { border-bottom: none; }
-.data-table tbody tr:hover { background: var(--color-surface-2); }
+.data-table tbody tr { transition: background 0.12s ease; }
+.data-table tbody tr:hover { background: var(--color-accent-soft); }
 .data-table .text-link.small + .text-link.small { margin-left: var(--space-3); }
 .role-select { padding: 4px 8px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 0.8125rem; font-family: inherit; background: var(--color-surface); }
 
@@ -732,7 +906,7 @@ code {
 .stat-card-wide { grid-column: span 2; }
 @media (max-width: 640px) { .stat-card-wide { grid-column: span 1; } }
 .stat-label { font-size: 0.75rem; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: var(--space-2); font-weight: 600; }
-.stat-value { font-size: 2rem; font-weight: 700; line-height: 1.1; letter-spacing: -0.02em; }
+.stat-value { font-size: 2rem; font-weight: 700; line-height: 1.1; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; } /* WHY: numbers align cleanly. */
 .stat-sub { font-size: 0.875rem; color: var(--color-text-muted); font-weight: 400; }
 
 .capacity-bar {
@@ -749,7 +923,15 @@ code {
 .capacity-label { font-size: 0.8125rem; color: var(--color-text-muted); font-weight: 500; }
 .capacity-track { height: 10px; background: var(--color-surface-alt); border-radius: var(--radius-full); overflow: hidden; }
 .capacity-fill { height: 100%; background: var(--gradient-accent); border-radius: inherit; transition: width 0.4s ease; }
-.capacity-value { text-align: right; font-weight: 600; }
+/* WHY: warn when an event is nearly sold out — colour signals urgency
+   instead of the user having to read the numbers. Add class on the fill. */
+.capacity-fill.is-high { background: linear-gradient(135deg, #b45309 0%, #d97706 100%); }
+.capacity-fill.is-full { background: linear-gradient(135deg, #b91c1c 0%, #dc2626 100%); }
+.capacity-value { text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; }
+@media (max-width: 480px) {
+  .capacity-bar { grid-template-columns: 1fr; gap: var(--space-2); }
+  .capacity-value { text-align: left; }
+}
 
 /* ============================================================ QUICK ACTIONS ============================================================ */
 .quick-actions { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: var(--space-4); }
@@ -761,8 +943,9 @@ code {
   transition: all 0.2s ease;
   display: block;
 }
-.quick-action-card:hover { transform: translateY(-2px); border-color: var(--color-border-strong); box-shadow: var(--shadow-md); }
+.quick-action-card:hover { transform: translateY(-2px); border-color: var(--color-accent); box-shadow: var(--shadow-md); }
 .quick-action-card h3 { margin: 0 0 var(--space-2); color: var(--color-text); }
+.quick-action-card:hover h3 { color: var(--color-accent); } /* WHY: reinforces the whole card is the link. */
 .quick-action-card p { margin: 0; font-size: 0.9375rem; color: var(--color-text-muted); }
 
 /* ============================================================ SCANNER ============================================================ */
@@ -785,12 +968,33 @@ code {
   border: 1px dashed var(--color-border-strong);
   border-radius: var(--radius-xl);
 }
-.empty-state p { margin-bottom: var(--space-4); color: var(--color-text-muted); font-size: 1rem; }
+.empty-state p { margin: 0 auto var(--space-4); color: var(--color-text-muted); font-size: 1rem; max-width: 40ch; }
+
+/* WHY: a reusable skeleton shimmer so lists/cards have a "loading" state
+   instead of popping in — feels faster and intentional. Apply .skeleton. */
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: var(--color-surface-alt);
+  border-radius: var(--radius-md);
+  color: transparent !important;
+}
+.skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
+  animation: shimmer 1.3s infinite;
+}
+@keyframes shimmer { to { transform: translateX(100%); } }
 
 /* ============================================================ PAGINATION ============================================================ */
 .pagination { display: flex; align-items: center; justify-content: center; gap: var(--space-4); margin-top: var(--space-6); }
-.page-link { padding: 8px 16px; border: 1px solid var(--color-border-strong); border-radius: var(--radius-md); font-size: 0.9375rem; font-weight: 500; background: var(--color-surface); }
-.page-link:hover { background: var(--color-surface-alt); border-color: var(--color-text-muted); }
+.page-link { padding: 8px 16px; min-height: var(--tap-target); display: inline-flex; align-items: center; border: 1px solid var(--color-border-strong); border-radius: var(--radius-md); font-size: 0.9375rem; font-weight: 500; background: var(--color-surface); color: var(--color-text); text-decoration: none; }
+.page-link:hover { background: var(--color-surface-alt); border-color: var(--color-text-muted); color: var(--color-text); }
+/* WHY: a disabled prev/next must look unavailable, not just do nothing. */
+.page-link.is-disabled { opacity: 0.4; pointer-events: none; }
 .page-info { color: var(--color-text-muted); font-size: 0.875rem; }
 
 /* ============================================================ ERROR PAGES ============================================================ */
