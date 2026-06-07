@@ -172,45 +172,4 @@
     quantityInput.addEventListener('change', updatePrice);
     quantityInput.addEventListener('input', updatePrice);
   }
-
-  const paymentForm = document.getElementById('payment-form');
-  if (paymentForm && ticketPrice > 0) {
-    paymentForm.addEventListener('submit', async (event) => {
-      event.preventDefault();
-      const submitButton = paymentForm.querySelector('button[type="submit"]');
-      if (submitButton) {
-        submitButton.disabled = true;
-        submitButton.textContent = 'Redirecting...';
-      }
-
-      try {
-        const formData = new FormData(paymentForm);
-        const response = await fetch(paymentForm.action, {
-          method: 'POST',
-          body: formData,
-          headers: {
-            Accept: 'application/json',
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error('Payment initiation failed');
-        }
-
-        const data = await response.json();
-        if (data.authorizationUrl) {
-          window.location.href = data.authorizationUrl;
-          return;
-        }
-
-        throw new Error(data.message || 'Unable to redirect to Paystack');
-      } catch (err) {
-        if (submitButton) {
-          submitButton.disabled = false;
-          submitButton.textContent = 'Pay with Paystack';
-        }
-        alert(err?.message || 'Could not start payment. Please try again.');
-      }
-    });
-  }
 </script>
